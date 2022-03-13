@@ -1,0 +1,61 @@
+version: 2.1
+jobs:
+  build:
+    docker: 
+      - image: cimg/base:stable
+    environment:
+      AWS_PAGER: ""
+      MYSQL_VERSION: 5.7
+      SCHEMASPY_VERSION: 6.1.0
+      DBMATE_VERSION: 1.14.0
+      DB_NAME: sakila
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: setup Docker network
+          command:
+            docker network create circleci || true
+      - run:
+          name: setup SQL directory
+          command: |
+            docker create -v /docker-entrypoint-initdb.d --name sql public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker cp ~/project/db/baseline.sql sql:/docker-entrypoint-initdb.d
+      - run:
+          name: Init MySQL db
+          background: true
+          command: |
+            docker run --network circleci --volumes-from sql --name mysql -e MYSQL_ROOT_HOST='%' -e MYSQL_ALLOW_EMPTY_PASSWORD=true -e MYSQL_DATABASE=${DB_NAME} public.ecr.aws/docker/library/mysql:${MYSQL_VERSION}
+      - run:
+          name: Create data volume
+          command: |
+            docker create -v /config --name config public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker cp schemaspy.properties config:/config
+            docker create -v /db --name migrate public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker cp ~/project/db/ migrate:/
+      - run:
+          name: Wait for starting MySQL
+          command: |
+            docker run --network circleci jwilder/dockerize -wait tcp://mysql:3306 -timeout 3m -wait-retry-interval 1s
+      - run:
+          name: dbmate migration
+          command: |
+            docker run --network circleci --volumes-from migrate --name dbmate amacneil/dbmate:${DBMATE_VERSION} -u "mysql://root@mysql:3306/${DB_NAME}" up
+      - run:
+          name: Run SchemaSpy
+          working_directory: .
+          command: |
+            docker run --network circleci --volumes-from config --name schemaspy schemaspy/schemaspy:${SCHEMASPY_VERSION} -configFile /config/schemaspy.properties -imageformat png -hq
+      - run:
+          name: Download Schema Graph
+          command: |
+            docker cp schemaspy:/output ./
+      - store_artifacts:
+          path: ./output
+
+workflows:
+  version: 2
+  build: 
+    jobs:
+    - build
