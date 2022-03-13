@@ -46,7 +46,7 @@ jobs:
           name: Run SchemaSpy
           working_directory: .
           command: |
-            docker run --network circleci --volumes-from config --name schemaspy schemaspy/schemaspy:${SCHEMASPY_VERSION} -configFile /config/schemaspy.properties -imageformat png -hq
+            docker run --network circleci --volumes-from config --name schemaspy schemaspy/schemaspy:${SCHEMASPY_VERSION} -configFile /config/schemaspy.properties -imageformat svg
       - run:
           name: Download Schema Graph
           command: |
