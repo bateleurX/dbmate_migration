@@ -1,18 +1,34 @@
 version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@2.1.0
 jobs:
   build:
-    docker: 
+    docker:
       - image: cimg/base:stable
     environment:
-      AWS_PAGER: ""
       MYSQL_VERSION: 5.7
       SCHEMASPY_VERSION: 6.1.0
       DBMATE_VERSION: 1.14.0
       DB_NAME: sakila
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
+      - aws-cli/setup
+      - run:
+          name: aws login
+          command:
+            aws_sts_credentials=$(aws sts assume-role-with-web-identity \
+              --role-arn $AWS_ROLE_ARN \
+              --web-identity-token ${CIRCLE_OIDC_TOKEN} \
+              --role-session-name "circle-ci-session" \
+              --duration-seconds 900 \
+              --query "Credentials" \
+              --output "json")
+
+            echo export AWS_ACCESS_KEY_ID="$(echo $aws_sts_credentials | jq -r '.AccessKeyId')" >> $BASH_ENV
+            echo export AWS_SECRET_ACCESS_KEY="$(echo $aws_sts_credentials | jq -r '.SecretAccessKey')" >> $BASH_ENV
+            echo export AWS_SESSION_TOKEN="$(echo $aws_sts_credentials | jq -r '.SessionToken')" >> $BASH_ENV
+            source $BASH_ENV
       - run:
           name: setup Docker network
           command:
@@ -56,6 +72,8 @@ jobs:
 
 workflows:
   version: 2
-  build: 
+  build:
     jobs:
-    - build
+    - build:
+        context:
+          context
