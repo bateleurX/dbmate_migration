@@ -18,7 +18,7 @@ jobs:
           name: aws login
           command:
             aws_sts_credentials=$(aws sts assume-role-with-web-identity \
-              --role-arn $AWS_ROLE_ARN \
+              --role-arn ${AWS_ROLE_ARN} \
               --web-identity-token ${CIRCLE_OIDC_TOKEN} \
               --role-session-name "circle-ci-session" \
               --duration-seconds 900 \
