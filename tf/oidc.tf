@@ -52,13 +52,11 @@ resource "aws_iam_policy" "CircleCI_policy" {
                 "s3:PutObject",
                 "s3:GetObject",
                 "s3:ListBucket",
-                "s3:DeleteObject",
-                "cloudfront:CreateInvalidation"
+                "s3:DeleteObject"
             ],
             "Resource": [
                 "arn:aws:s3:::${var.aws_bucket_name}",
-                "arn:aws:s3:::*/*",
-                "arn:aws:cloudfront::${var.aws_project_id}:distribution/${var.aws_distribution_id}"
+                "arn:aws:s3:::*/*"
             ]
         },
         {
