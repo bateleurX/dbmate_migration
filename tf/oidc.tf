@@ -60,6 +60,22 @@ resource "aws_iam_policy" "CircleCI_policy" {
                 "arn:aws:s3:::*/*",
                 "arn:aws:cloudfront::${var.aws_project_id}:distribution/${var.aws_distribution_id}"
             ]
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "ecr-public:GetAuthorizationToken",
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": [
+                "cloudfront:CreateInvalidation"
+            ],
+            "Resource": [
+                "arn:aws:cloudfront::${var.aws_project_id}:distribution/${var.aws_distribution_id}"
+            ]
         }
     ]
 }
