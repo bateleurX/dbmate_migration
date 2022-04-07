@@ -68,6 +68,13 @@ jobs:
           name: Download Schema Graph
           command: |
             docker cp schemaspy:/output ./
+      - run:
+          name: Upload S3 bucket and invalidate CF
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "main" ]; then
+              aws s3 sync --delete --only-show-errors output/ s3://${S3_BUCKET_NAME}/
+              aws cloudfront create-invalidation --distribution-id ${CF_DISTRIBUTION_ID} --paths "/*"
+            fi
       - store_artifacts:
           path: ./output
 
