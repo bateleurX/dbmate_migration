@@ -13,7 +13,8 @@ jobs:
       DB_NAME: sakila
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.11
       - aws-cli/setup
       - run:
           name: aws login
