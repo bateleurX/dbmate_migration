@@ -2,9 +2,7 @@
 lint:
   # require table comment
   requireTableComment:
-    enabled: true
-    # all commented, or all uncommented.
-    allOrNothing: true
+    enabled: false
   # require column comment
   requireColumnComment:
     enabled: true
