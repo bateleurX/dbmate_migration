@@ -61,7 +61,7 @@ jobs:
       - run:
           name: tbls lint
           command: |
-            docker run --network circleci --volumes-from tblsyml --name tbls k1low/tbls:${TBLS_VERSION} lint mysql://root@mysql:3306/${DB_NAME}
+            docker run --network circleci --volumes-from tblsyml --name tbls k1low/tbls:${TBLS_VERSION} lint --config /tbls/.tbls.yml mysql://root@mysql:3306/${DB_NAME}
       - run:
           name: check duplicated index
           command: |
