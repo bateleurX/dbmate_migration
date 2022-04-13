@@ -9,10 +9,12 @@ jobs:
       MYSQL_VERSION: 5.7
       SCHEMASPY_VERSION: 6.1.0
       DBMATE_VERSION: 1.14.0
+      PERCONA_TOOLKIT_VERSION: 3.2.1
       DB_NAME: sakila
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.11
       - aws-cli/setup
       - run:
           name: aws login
@@ -59,6 +61,10 @@ jobs:
           name: dbmate migration
           command: |
             docker run --network circleci --volumes-from migrate --name dbmate amacneil/dbmate:${DBMATE_VERSION} -u "mysql://root@mysql:3306/${DB_NAME}" up
+      - run:
+          name: check duplicated index
+          command: |
+            docker run --network circleci --name perconatoolkit perconalab/percona-toolkit:${PERCONA_TOOLKIT_VERSION} pt-duplicate-key-checker --host mysql --user root --databases ${DB_NAME}
       - run:
           name: Run SchemaSpy
           working_directory: .
