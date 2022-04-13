@@ -48,7 +48,7 @@ jobs:
             docker cp schemaspy.properties config:/config
             docker create -v /db --name migrate public.ecr.aws/docker/library/busybox:musl /bin/true
             docker cp ~/project/db/ migrate:/
-            docker create -v /tbls --name config public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker create -v /tbls --name tbls public.ecr.aws/docker/library/busybox:musl /bin/true
             docker cp ~/project/.tbls.yml tbls:/tbls
       - run:
           name: Wait for starting MySQL
