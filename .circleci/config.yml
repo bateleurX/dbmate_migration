@@ -9,6 +9,7 @@ jobs:
       MYSQL_VERSION: 5.7
       SCHEMASPY_VERSION: 6.1.0
       DBMATE_VERSION: 1.14.0
+      TBLS_VERSION: v1.55.1
       PERCONA_TOOLKIT_VERSION: 3.2.1
       DB_NAME: sakila
     steps:
@@ -18,18 +19,12 @@ jobs:
       - aws-cli/setup
       - run:
           name: aws login
-          command:
+          command: |
             aws_sts_credentials=$(aws sts assume-role-with-web-identity --role-arn ${AWS_ROLE_ARN} --web-identity-token ${CIRCLE_OIDC_TOKEN} --role-session-name "circle-ci-session" --duration-seconds 900 --query "Credentials" --output "json")
-
             echo export AWS_ACCESS_KEY_ID="$(echo $aws_sts_credentials | jq -r '.AccessKeyId')" >> $BASH_ENV
-
             echo export AWS_SECRET_ACCESS_KEY="$(echo $aws_sts_credentials | jq -r '.SecretAccessKey')" >> $BASH_ENV
-            
             echo export AWS_SESSION_TOKEN="$(echo $aws_sts_credentials | jq -r '.SessionToken')" >> $BASH_ENV
-            
             source $BASH_ENV
-
-            sleep 5
 
             aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
       - run:
@@ -53,6 +48,8 @@ jobs:
             docker cp schemaspy.properties config:/config
             docker create -v /db --name migrate public.ecr.aws/docker/library/busybox:musl /bin/true
             docker cp ~/project/db/ migrate:/
+            docker create -v /tbls --name tblsyml public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker cp ~/project/.tbls.yml tblsyml:/tbls
       - run:
           name: Wait for starting MySQL
           command: |
@@ -61,6 +58,10 @@ jobs:
           name: dbmate migration
           command: |
             docker run --network circleci --volumes-from migrate --name dbmate amacneil/dbmate:${DBMATE_VERSION} -u "mysql://root@mysql:3306/${DB_NAME}" up
+      - run:
+          name: tbls lint
+          command: |
+            docker run --network circleci --volumes-from tblsyml --name tbls k1low/tbls:${TBLS_VERSION} lint --config /tbls/.tbls.yml mysql://root@mysql:3306/${DB_NAME}
       - run:
           name: check duplicated index
           command: |

@@ -1,0 +1,44 @@
+# .tbls.yml
+lint:
+  # require table comment
+  requireTableComment:
+    enabled: false
+  # require column comment
+  requireColumnComment:
+    enabled: true
+    # all commented, or all uncommented.
+    allOrNothing: true
+  # require index comment
+  requireIndexComment:
+    enabled: true
+    # all commented, or all uncommented.
+    allOrNothing: true
+  # require constraint comment
+  requireConstraintComment:
+    enabled: true
+    # all commented, or all uncommented.
+    allOrNothing: true
+  # require trigger comment
+  requireTriggerComment:
+    enabled: true
+    # all commented, or all uncommented.
+    allOrNothing: true
+  # find a table that has no relation
+  unrelatedTable:
+    enabled: false
+  # check max column count
+  columnCount:
+    enabled: true
+    max: 20
+  # require columns
+  requireColumns:
+    enabled: false
+  # check duplicate relations
+  duplicateRelations:
+    enabled: true
+  # check if the foreign key columns have an index
+  requireForeignKeyIndex:
+    enabled: true
+  # checks if labels are in BigQuery style ( https://cloud.google.com/resource-manager/docs/creating-managing-labels#requirements )
+  labelStyleBigQuery:
+    enabled: false
