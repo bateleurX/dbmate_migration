@@ -42,6 +42,14 @@ jobs:
           command: |
             docker run --network circleci --volumes-from sql --name mysql -e MYSQL_ROOT_HOST='%' -e MYSQL_ALLOW_EMPTY_PASSWORD=true -e MYSQL_DATABASE=${DB_NAME} public.ecr.aws/docker/library/mysql:${MYSQL_VERSION}
       - run:
+          name: Docker Pull
+          command: |
+            docker pull public.ecr.aws/docker/library/busybox:musl
+            docker pull jwilder/dockerize
+            docker pull amacneil/dbmate:${DBMATE_VERSION}
+            docker pull k1low/tbls:${TBLS_VERSION}
+            docker pull schemaspy/schemaspy:${SCHEMASPY_VERSION}
+      - run:
           name: Create data volume
           command: |
             docker create -v /config --name config public.ecr.aws/docker/library/busybox:musl /bin/true
