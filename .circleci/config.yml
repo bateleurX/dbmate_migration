@@ -48,7 +48,7 @@ jobs:
             docker cp schemaspy.properties config:/config
             docker create -v /db --name migrate public.ecr.aws/docker/library/busybox:musl /bin/true
             docker cp ~/project/db/ migrate:/
-            docker create -v /tbls --name tbls public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker create -v /tbls --name tblsyml public.ecr.aws/docker/library/busybox:musl /bin/true
             docker cp ~/project/.tbls.yml tbls:/tbls
       - run:
           name: Wait for starting MySQL
@@ -61,7 +61,7 @@ jobs:
       - run:
           name: tbls lint
           command: |
-            docker run --network circleci --volumes-from tbls --name tbls k1low/tbls:${TBLS_VERSION} lint mysql://root@mysql:3306/${DB_NAME}
+            docker run --network circleci --volumes-from tblsyml --name tbls k1low/tbls:${TBLS_VERSION} lint mysql://root@mysql:3306/${DB_NAME}
       - run:
           name: check duplicated index
           command: |
