@@ -49,7 +49,7 @@ jobs:
             docker create -v /db --name migrate public.ecr.aws/docker/library/busybox:musl /bin/true
             docker cp ~/project/db/ migrate:/
             docker create -v /tbls --name tblsyml public.ecr.aws/docker/library/busybox:musl /bin/true
-            docker cp ~/project/.tbls.yml tbls:/tbls
+            docker cp ~/project/.tbls.yml tblsyml:/tbls
       - run:
           name: Wait for starting MySQL
           command: |
