@@ -4,93 +4,43 @@ lint:
   requireTableComment:
     enabled: true
     # all commented, or all uncommented.
-    allOrNothing: false
+    allOrNothing: true
   # require column comment
   requireColumnComment:
     enabled: true
     # all commented, or all uncommented.
     allOrNothing: true
-    # exclude columns from warnings
-    exclude:
-      - id
-      - created_at
-      - updated_at
-    # exclude tables from warnings
-    excludeTables:
-      - logs
-      - comment_stars
   # require index comment
   requireIndexComment:
     enabled: true
     # all commented, or all uncommented.
-    allOrNothing: false
-    # exclude indexes from warnings
-    exclude:
-      - user_id_idx
-    # exclude tables from warnings
-    excludeTables:
-      - logs
-      - comment_stars
+    allOrNothing: true
   # require constraint comment
   requireConstraintComment:
     enabled: true
     # all commented, or all uncommented.
-    allOrNothing: false
-    # exclude constrains from warnings
-    exclude:
-      - unique_user_name
-    # exclude tables from warnings
-    excludeTables:
-      - logs
-      - comment_stars
+    allOrNothing: true
   # require trigger comment
   requireTriggerComment:
     enabled: true
     # all commented, or all uncommented.
-    allOrNothing: false
-    # exclude triggers from warnings
-    exclude:
-      - update_count
-    # exclude tables from warnings
-    excludeTables:
-      - logs
-      - comment_stars
+    allOrNothing: true
   # find a table that has no relation
   unrelatedTable:
-    enabled: true
-    # all related, or all unrelated.
-    allOrNothing: true
-    # exclude tables from warnings
-    exclude:
-      - logs
+    enabled: false
   # check max column count
   columnCount:
     enabled: true
-    max: 10
-    # exclude tables from warnings
-    exclude:
-      - user_options
+    max: 20
   # require columns
   requireColumns:
-    enabled: true
-    columns:
-      -
-        name: created
-      -
-        name: updated
-        exclude:
-          - logs
-          - CamelizeTable
+    enabled: false
   # check duplicate relations
   duplicateRelations:
     enabled: true
   # check if the foreign key columns have an index
   requireForeignKeyIndex:
     enabled: true
-    exclude:
-      - comments.user_id
   # checks if labels are in BigQuery style ( https://cloud.google.com/resource-manager/docs/creating-managing-labels#requirements )
   labelStyleBigQuery:
-    enabled: true
-    exclude:
-      - schema_migrations
+    enabled: false
