@@ -50,7 +50,6 @@ jobs:
             docker pull k1low/tbls:${TBLS_VERSION}
             docker pull perconalab/percona-toolkit:${PERCONA_TOOLKIT_VERSION}
             docker pull schemaspy/schemaspy:${SCHEMASPY_VERSION}
-            docker pull jwilder/dockerize
       - run:
           name: Create data volume
           command: |
