@@ -43,6 +43,9 @@ jobs:
       - run:
           name: Create data volume
           command: |
+            # remote Docker環境のコンテナはローカルファイルを直接マウントできないため、コピー用のコンテナにコピーして、そのコンテナをマウントする形式です
+            # このことはCircleCIドキュメントにも記載があります
+            # https://circleci.com/docs/ja/2.0/building-docker-images/#mounting-folders
             docker create -v /config --name config busybox:musl /bin/true
             docker cp schemaspy.properties config:/config
             docker create -v /db --name migrate busybox:musl /bin/true
