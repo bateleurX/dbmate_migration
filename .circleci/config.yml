@@ -18,23 +18,13 @@ jobs:
           version: 20.10.11
       - aws-cli/setup
       - run:
-          name: aws login
-          command: |
-            aws_sts_credentials=$(aws sts assume-role-with-web-identity --role-arn ${AWS_ROLE_ARN} --web-identity-token ${CIRCLE_OIDC_TOKEN} --role-session-name "circle-ci-session" --duration-seconds 900 --query "Credentials" --output "json")
-            echo export AWS_ACCESS_KEY_ID="$(echo $aws_sts_credentials | jq -r '.AccessKeyId')" >> $BASH_ENV
-            echo export AWS_SECRET_ACCESS_KEY="$(echo $aws_sts_credentials | jq -r '.SecretAccessKey')" >> $BASH_ENV
-            echo export AWS_SESSION_TOKEN="$(echo $aws_sts_credentials | jq -r '.SessionToken')" >> $BASH_ENV
-            source $BASH_ENV
-
-            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
-      - run:
           name: setup Docker network
           command:
             docker network create circleci || true
       - run:
           name: setup SQL directory
           command: |
-            docker create -v /docker-entrypoint-initdb.d --name sql public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker create -v /docker-entrypoint-initdb.d --name sql busybox:musl /bin/true
             docker cp ~/project/db/baseline.sql sql:/docker-entrypoint-initdb.d
       - run:
           name: Init MySQL db
@@ -44,7 +34,7 @@ jobs:
       - run:
           name: Docker Pull
           command: |
-            docker pull public.ecr.aws/docker/library/busybox:musl
+            # MySQLの起動時間中に必要なDockerイメージを事前にpullすることで、各ステージでのpull時間を節約しています。
             docker pull jwilder/dockerize
             docker pull amacneil/dbmate:${DBMATE_VERSION}
             docker pull k1low/tbls:${TBLS_VERSION}
@@ -53,11 +43,11 @@ jobs:
       - run:
           name: Create data volume
           command: |
-            docker create -v /config --name config public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker create -v /config --name config busybox:musl /bin/true
             docker cp schemaspy.properties config:/config
-            docker create -v /db --name migrate public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker create -v /db --name migrate busybox:musl /bin/true
             docker cp ~/project/db/ migrate:/
-            docker create -v /tbls --name tblsyml public.ecr.aws/docker/library/busybox:musl /bin/true
+            docker create -v /tbls --name tblsyml busybox:musl /bin/true
             docker cp ~/project/.tbls.yml tblsyml:/tbls
       - run:
           name: Wait for starting MySQL
@@ -84,6 +74,16 @@ jobs:
           name: Download Schema Graph
           command: |
             docker cp schemaspy:/output ./
+      - run:
+          name: aws login
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "main" ]; then
+              aws_sts_credentials=$(aws sts assume-role-with-web-identity --role-arn ${AWS_ROLE_ARN} --web-identity-token ${CIRCLE_OIDC_TOKEN} --role-session-name "circle-ci-session" --duration-seconds 900 --query "Credentials" --output "json")
+              echo export AWS_ACCESS_KEY_ID="$(echo $aws_sts_credentials | jq -r '.AccessKeyId')" >> $BASH_ENV
+              echo export AWS_SECRET_ACCESS_KEY="$(echo $aws_sts_credentials | jq -r '.SecretAccessKey')" >> $BASH_ENV
+              echo export AWS_SESSION_TOKEN="$(echo $aws_sts_credentials | jq -r '.SessionToken')" >> $BASH_ENV
+              source $BASH_ENV
+            fi
       - run:
           name: Upload S3 bucket and invalidate CF
           command: |
