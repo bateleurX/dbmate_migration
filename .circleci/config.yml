@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  aws-cli: circleci/aws-cli@2.1.0
+  aws-cli: circleci/aws-cli@3.1
 jobs:
   build:
     docker:
@@ -16,16 +16,14 @@ jobs:
       - checkout
       - setup_remote_docker:
           version: 20.10.11
-      - aws-cli/setup
+      - aws-cli/setup:
+          profile-name: default
+          role-arn: ${AWS_ROLE_ARN}
+          role-session-name: circleci_session
+          session-duration: 900
       - run:
-          name: aws login
+          name: ecr public login
           command: |
-            aws_sts_credentials=$(aws sts assume-role-with-web-identity --role-arn ${AWS_ROLE_ARN} --web-identity-token ${CIRCLE_OIDC_TOKEN} --role-session-name "circle-ci-session" --duration-seconds 900 --query "Credentials" --output "json")
-            echo export AWS_ACCESS_KEY_ID="$(echo $aws_sts_credentials | jq -r '.AccessKeyId')" >> $BASH_ENV
-            echo export AWS_SECRET_ACCESS_KEY="$(echo $aws_sts_credentials | jq -r '.SecretAccessKey')" >> $BASH_ENV
-            echo export AWS_SESSION_TOKEN="$(echo $aws_sts_credentials | jq -r '.SessionToken')" >> $BASH_ENV
-            source $BASH_ENV
-
             aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
       - run:
           name: setup Docker network
@@ -44,7 +42,6 @@ jobs:
       - run:
           name: Docker Pull
           command: |
-            docker pull public.ecr.aws/docker/library/busybox:musl
             docker pull jwilder/dockerize
             docker pull amacneil/dbmate:${DBMATE_VERSION}
             docker pull k1low/tbls:${TBLS_VERSION}
