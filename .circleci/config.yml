@@ -20,7 +20,7 @@ jobs:
           profile-name: default
           role-arn: ${AWS_ROLE_ARN}
           role-session-name: circleci_session
-          session-duration: 900
+          session-duration: "900"
       - run:
           name: ecr public login
           command: |
